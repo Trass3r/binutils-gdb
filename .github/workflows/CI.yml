@@ -22,16 +22,16 @@ jobs:
       env:
         CC: 'ccache clang'
         CXX: 'ccache clang++'
-        CFLAGS: '-march=skylake -flto=thin'
-        CXXFLAGS: '-march=skylake -flto=thin'
-        LDFLAGS: '-static-libgcc -static-libstdc++'
+        CFLAGS: '-march=skylake -flto=thin -ffunction-sections -fdata-sections'
+        CXXFLAGS: '-march=skylake -flto=thin -ffunction-sections -fdata-sections'
+        LDFLAGS: '-fuse-ld=lld -Wl,--gc-sections,--icf=safe -static-libgcc -static-libstdc++'
       run: |
         # --disable-unit-tests doesn't build
         # --with-intel_pt extra dep..
         # --enable-static --disable-interprocess-agent doesn't work with plugins
         ./configure --prefix=$(pwd)/install --disable-nls --disable-sim --disable-werror --enable-plugins --with-gdb --disable-tui --with-python=no
         make -j4
-        make install
+        make install-strip
     - name: create tarball
       run: cd install && tar cvapf "$GITHUB_WORKSPACE/binutils.tar.xz" *
     - uses: actions/upload-artifact@v3
