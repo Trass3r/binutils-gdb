@@ -22,9 +22,10 @@ jobs:
       env:
         CC: 'ccache clang'
         CXX: 'ccache clang++'
+        LD: 'ld.lld'
         CFLAGS: '-march=skylake -flto=thin -ffunction-sections -fdata-sections'
         CXXFLAGS: '-march=skylake -flto=thin -ffunction-sections -fdata-sections'
-        LDFLAGS: '-fuse-ld=lld -Wl,--gc-sections,--icf=safe -static-libgcc -static-libstdc++'
+        LDFLAGS: '-Wl,--gc-sections,--icf=safe -static-libgcc -static-libstdc++'
       run: |
         # --disable-unit-tests doesn't build
         # --with-intel_pt extra dep..
