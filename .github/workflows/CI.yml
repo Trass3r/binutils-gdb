@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Trass3r/setup-cpp@master
+    - run: |
+        sudo apt update && sudo apt install -y build-essential g++ ccache
+    - uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        max-size: 1G
+        verbose: 1
+    - name: build
+      env:
+        CC: ${{ matrix.cc }}
+        CXX: ${{ matrix.cxx }}
+        CXXFLAGS: ${{ matrix.cflags }}
+        LDFLAGS: ${{ matrix.cflags }} ${{ matrix.ldflags }} -static-libgcc -static-libstdc++
+        CMAKE_C_COMPILER_LAUNCHER: ccache
+        CMAKE_CXX_COMPILER_LAUNCHER: ccache
+        CCACHE_BASEDIR: ${{ github.workspace }}
+        CCACHE_NOCOMPRESS: 1 # cache action will also compress
+        #CCACHE_DEBUG: 1
+        #CCACHE_LOGFILE: /tmp/ccache.log
+      run: |
+        ./configure 
+        make -j4
+        make install DESTDIR=`pwd`/install
+    - name: create tarball
+      run: cd install && tar cvapf "$GITHUB_WORKSPACE/binutils.tar.xz" *
+    - uses: actions/upload-artifact@v3
+      with:
+        name: binutils
+        path: binutils.tar.xz
